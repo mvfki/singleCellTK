@@ -141,11 +141,11 @@ seuratScaleData <- function(inSCE, useAssay = "seuratNormData",
 #' @param inSCE (sce) object to compute highly variable genes from and to store
 #' back to it
 #' @param useAssay Specify the name of the assay to use for computation
-#'  of variable genes. It is recommended to use a raw counts assay with the 
+#'  of variable genes. It is recommended to use a raw counts assay with the
 #'  `vst` method and normalized assay with all other methods. Default
-#'  is \code{"counts"}. 
+#'  is \code{"counts"}.
 #' @param hvgMethod selected method to use for computation of highly variable
-#'  genes. One of 'vst', 'dispersion', or 'mean.var.plot'. Default method 
+#'  genes. One of 'vst', 'dispersion', or 'mean.var.plot'. Default method
 #'  is `vst` which uses the raw counts. All other methods use normalized counts.
 #' @param hvgNumber numeric value of how many genes to select as highly
 #' variable. Default \code{2000}
@@ -166,14 +166,14 @@ seuratScaleData <- function(inSCE, useAssay = "seuratNormData",
 seuratFindHVG <- function(inSCE, useAssay = "counts",
                           hvgMethod = "vst", hvgNumber = 2000, altExp = FALSE,
                           verbose = TRUE) {
-  
+
   if(hvgMethod == "vst"){
     seuratObject <- convertSCEToSeurat(inSCE, countsAssay = useAssay)
   }
   else{
     seuratObject <- convertSCEToSeurat(inSCE, normAssay = useAssay)
   }
-  
+
   seuratObject <- Seurat::FindVariableFeatures(seuratObject,
                                                selection.method = hvgMethod,
                                                nfeatures = hvgNumber,
@@ -948,8 +948,8 @@ convertSCEToSeurat <- function(inSCE, countsAssay = NULL, normAssay = NULL,
   # Seurat has a particular way of modifying row/colnames
   # Save row/colnames in metadata
   seuratRowNames <- gsub("_", "-", rownames(inSCE))
-  seuratColNames <- gsub("_", "-", colnames(inSCE))
-  inSCE@metadata$seurat$colNames <- seuratColNames
+  #seuratColNames <- gsub("_", "-", colnames(inSCE))
+  #inSCE@metadata$seurat$colNames <- seuratColNames
   inSCE@metadata$seurat$rowNames <- seuratRowNames
 
   # Create Seurat object and Set counts assay
@@ -960,7 +960,7 @@ convertSCEToSeurat <- function(inSCE, countsAssay = NULL, normAssay = NULL,
     temp <- .convertToMatrix(assays(inSCE)[[1]])
   }
   rownames(temp) <- seuratRowNames
-  colnames(temp) <- seuratColNames
+  #colnames(temp) <- seuratColNames
   seuratObject <- Seurat::CreateSeuratObject(counts = temp)
 
   # Set normalized assay
@@ -971,14 +971,14 @@ convertSCEToSeurat <- function(inSCE, countsAssay = NULL, normAssay = NULL,
     }
     seuratObject@assays$RNA@data <- tempMatrix
     rownames(seuratObject@assays$RNA@data) <- seuratRowNames
-    colnames(seuratObject@assays$RNA@data) <- seuratColNames
+    #colnames(seuratObject@assays$RNA@data) <- seuratColNames
   }
 
   # Set Scaled Assay
   if (!is.null(scaledAssay) && scaledAssay %in% names(assays(inSCE))) {
     seuratObject@assays$RNA@scale.data <- as.matrix(assay(inSCE, scaledAssay))
     rownames(seuratObject@assays$RNA@scale.data) <- seuratRowNames
-    colnames(seuratObject@assays$RNA@scale.data) <- seuratColNames
+    #colnames(seuratObject@assays$RNA@scale.data) <- seuratColNames
   }
 
   if (!is.null(inSCE@metadata$seurat$obj)) {
@@ -1018,7 +1018,7 @@ convertSCEToSeurat <- function(inSCE, countsAssay = NULL, normAssay = NULL,
     for (redc in SingleCellExperiment::reducedDimNames(inSCE)) {
       reDim <- SingleCellExperiment::reducedDim(inSCE, redc)
       colnames(reDim) <- paste0(redc, "_", seq_len(length(colnames(reDim))))
-      rownames(reDim) <- gsub('_', '-', rownames(reDim))
+      #rownames(reDim) <- gsub('_', '-', rownames(reDim))
       key <-  gsub('_', '', redc)
       seuratObject@reductions[[redc]] <- Seurat::CreateDimReducObject(embeddings = reDim,
                                                                 key = paste0(key, "_"), assay = "RNA")
@@ -1477,6 +1477,7 @@ seuratGenePlot <- function(inSCE,
   colnames(markers.combined) <- gsub(pattern = paste0(ident.1, "_"),
                                      replacement = "",
                                      x = colnames(markers.combined))
+  colnames(markers.combined)[2] <- "avg_log2FC"
   colnames(markers.combined) <- c(colnames(markers.combined)[-length(colnames(markers.combined))], "p_val_adj")
   return(markers.combined)
 }
